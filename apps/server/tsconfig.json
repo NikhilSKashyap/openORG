@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": { "rootDir": "src", "outDir": "dist" },
+  "include": ["src/**/*.ts"],
+  "references": [
+    { "path": "../../packages/protocol" },
+    { "path": "../../packages/sdk" },
+    { "path": "../../packages/store-memory" },
+    { "path": "../../packages/store-sqlite" }
+  ]
+}

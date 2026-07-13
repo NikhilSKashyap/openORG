@@ -1,0 +1,231 @@
+:root {
+  --ow-accent: #2563eb;
+  --ow-ink: #172033;
+  --ow-muted: #687386;
+  --ow-border: #dce1e8;
+  --ow-panel: #f7f8fa;
+  --ow-danger: #a43b3b;
+}
+.ow-shell {
+  min-height: 100%;
+  color: var(--ow-ink);
+  background: #fff;
+  font:
+    14px/1.45 ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+.ow-shell button,
+.ow-shell select {
+  font: inherit;
+}
+.ow-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--ow-border);
+}
+.ow-header div,
+.ow-header label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.ow-header span,
+.ow-muted {
+  color: var(--ow-muted);
+}
+.ow-header select {
+  margin-left: 8px;
+}
+.ow-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+}
+.ow-main {
+  padding: 28px;
+  max-width: 1120px;
+}
+.ow-heading,
+.ow-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.ow-heading h1,
+.ow-main h1 {
+  margin: 2px 0 20px;
+}
+.ow-eyebrow {
+  margin: 0;
+  color: var(--ow-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+}
+.ow-primary {
+  border: 0;
+  border-radius: 5px;
+  padding: 9px 13px;
+  background: var(--ow-accent);
+  color: #fff;
+  cursor: pointer;
+}
+.ow-actions button,
+.ow-attention button {
+  border: 1px solid var(--ow-border);
+  background: #fff;
+  padding: 7px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.ow-list {
+  border: 1px solid var(--ow-border);
+  border-radius: 7px;
+  overflow: hidden;
+}
+.ow-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 2fr) 1fr 1fr 1.4fr 1.3fr;
+  gap: 14px;
+  align-items: center;
+  padding: 13px 15px;
+  border-bottom: 1px solid var(--ow-border);
+}
+.ow-row:last-child {
+  border: 0;
+}
+.ow-row-title {
+  border: 0;
+  background: none;
+  padding: 0;
+  text-align: left;
+  color: var(--ow-accent);
+  font-weight: 650;
+  cursor: pointer;
+}
+.ow-why {
+  color: var(--ow-muted);
+}
+.ow-chip {
+  display: inline-block;
+  margin: 2px 3px 2px 0;
+  padding: 2px 7px;
+  border: 1px solid var(--ow-border);
+  border-radius: 99px;
+  font-size: 12px;
+}
+.ow-attention {
+  padding: 28px 20px;
+  border-left: 1px solid var(--ow-border);
+  background: var(--ow-panel);
+}
+.ow-attention h2 {
+  font-size: 15px;
+}
+.ow-attention button {
+  display: flex;
+  width: 100%;
+  margin: 8px 0;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+.ow-attention button span {
+  color: var(--ow-muted);
+  font-size: 12px;
+}
+.ow-empty,
+.ow-gate {
+  padding: 22px;
+  border: 1px solid var(--ow-border);
+  border-radius: 7px;
+  background: var(--ow-panel);
+}
+.ow-empty h2,
+.ow-empty h1 {
+  margin-top: 0;
+}
+.ow-object dl > div {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--ow-border);
+}
+.ow-object dt {
+  color: var(--ow-muted);
+}
+.ow-object dd {
+  margin: 0;
+}
+.ow-timeline {
+  display: flex;
+  list-style: none;
+  padding: 0;
+}
+.ow-timeline li {
+  flex: 1;
+  padding: 9px;
+  border-top: 3px solid var(--ow-border);
+}
+.ow-timeline li.is-complete {
+  border-color: var(--ow-accent);
+}
+.ow-timeline small {
+  display: block;
+  color: var(--ow-danger);
+}
+.ow-gate {
+  margin: 12px 0;
+}
+.ow-trace {
+  list-style: none;
+  padding: 0;
+}
+.ow-trace li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+  padding: 12px;
+  border: 1px solid var(--ow-border);
+  border-radius: 6px;
+}
+.ow-trace li.is-proposed {
+  border-style: dashed;
+  background: #fffaf0;
+}
+.ow-trace li.is-confirmed {
+  border-left: 4px solid var(--ow-accent);
+}
+.ow-trace li > div:nth-child(2) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+.ow-trace span {
+  color: var(--ow-muted);
+}
+.ow-glyph {
+  font-size: 20px;
+}
+@media (max-width: 800px) {
+  .ow-layout {
+    grid-template-columns: 1fr;
+  }
+  .ow-attention {
+    border-left: 0;
+    border-top: 1px solid var(--ow-border);
+  }
+  .ow-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .ow-why {
+    display: none;
+  }
+}

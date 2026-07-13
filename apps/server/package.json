@@ -1,0 +1,24 @@
+{
+  "name": "@openorg/server",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "test": "vitest run --config ../../vitest.config.ts"
+  },
+  "dependencies": {
+    "@openorg/protocol": "workspace:*",
+    "@openorg/sdk": "workspace:*",
+    "@openorg/skill-spine": "workspace:*",
+    "@openorg/store-sqlite": "workspace:*",
+    "fastify": "^5.4.0"
+  },
+  "devDependencies": {
+    "@openorg/store-memory": "workspace:*",
+    "tsx": "^4.20.3"
+  }
+}

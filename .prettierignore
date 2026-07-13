@@ -1,0 +1,5 @@
+.arch/
+docs/
+node_modules/
+dist/
+packages/protocol/schemas/

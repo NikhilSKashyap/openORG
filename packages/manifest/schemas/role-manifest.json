@@ -1,0 +1,354 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "default": "openorg.role-manifest",
+      "type": "string",
+      "const": "openorg.role-manifest"
+    },
+    "contractVersion": {
+      "default": "1.0.0",
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "workspace": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "primaryObject": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fields": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "type": {
+                "default": "text",
+                "type": "string",
+                "enum": ["text", "number", "date", "boolean", "url", "identity"]
+              }
+            },
+            "required": ["id", "label", "type"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["kind", "label", "fields"],
+      "additionalProperties": false
+    },
+    "stations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tagline": {
+            "type": "string",
+            "minLength": 1
+          },
+          "primaryObject": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "fields": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "label": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "type": {
+                      "default": "text",
+                      "type": "string",
+                      "enum": [
+                        "text",
+                        "number",
+                        "date",
+                        "boolean",
+                        "url",
+                        "identity"
+                      ]
+                    }
+                  },
+                  "required": ["id", "label", "type"],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": ["kind", "label", "fields"],
+            "additionalProperties": false
+          },
+          "defaultQueries": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "workspace": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "actor": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "status": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "since": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "home": {
+            "type": "object",
+            "properties": {
+              "attention": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "label": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "query": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["id", "label"],
+                  "additionalProperties": false
+                }
+              },
+              "stages": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "label": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "policy": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["id", "label"],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": ["attention", "stages"],
+            "additionalProperties": false
+          }
+        },
+        "required": ["id", "name", "tagline", "defaultQueries"],
+        "additionalProperties": false
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "default": "unknown",
+            "type": "string",
+            "enum": [
+              "available",
+              "configured",
+              "healthy",
+              "degraded",
+              "unavailable",
+              "planned",
+              "unknown"
+            ]
+          },
+          "statusDetail": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["provider", "status"],
+        "additionalProperties": false
+      }
+    },
+    "council": {
+      "type": "object",
+      "properties": {
+        "architect": {
+          "type": "string",
+          "minLength": 1
+        },
+        "builder": {
+          "type": "string",
+          "minLength": 1
+        },
+        "verifier": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["architect", "builder", "verifier"],
+      "additionalProperties": false
+    },
+    "skills": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "gates": {
+      "default": {},
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1
+      },
+      "additionalProperties": {
+        "type": "string",
+        "enum": ["human_approval", "verified_receipt", "none"]
+      }
+    },
+    "home": {
+      "type": "object",
+      "properties": {
+        "attention": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "query": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": ["id", "label"],
+            "additionalProperties": false
+          }
+        },
+        "stages": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "policy": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": ["id", "label"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["attention", "stages"],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "contract",
+    "contractVersion",
+    "workspace",
+    "title",
+    "primaryObject",
+    "sources",
+    "council",
+    "skills",
+    "gates",
+    "home"
+  ],
+  "additionalProperties": false
+}

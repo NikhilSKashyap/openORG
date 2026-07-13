@@ -1,0 +1,17 @@
+{
+  "name": "@openorg/conformance",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run --config ../../vitest.config.ts"
+  },
+  "dependencies": {
+    "@openorg/protocol": "file:../protocol",
+    "@openorg/sdk": "file:../sdk",
+    "@openorg/store-memory": "file:../store-memory",
+    "@openorg/store-sqlite": "file:../store-sqlite"
+  }
+}

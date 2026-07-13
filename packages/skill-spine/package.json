@@ -1,0 +1,25 @@
+{
+  "name": "@openorg/skill-spine",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "source": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run --config ../../vitest.config.ts"
+  },
+  "dependencies": {
+    "@openorg/protocol": "file:../protocol",
+    "@openorg/sdk": "file:../sdk"
+  },
+  "devDependencies": {
+    "@openorg/store-memory": "file:../store-memory",
+    "@types/node": "22.20.1"
+  }
+}

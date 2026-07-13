@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "exactOptionalPropertyTypes": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noUncheckedIndexedAccess": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ES2022"
+  },
+  "files": [],
+  "references": [
+    { "path": "./packages/protocol" },
+    { "path": "./packages/manifest" },
+    { "path": "./packages/sdk" },
+    { "path": "./packages/workbench-kit" },
+    { "path": "./packages/store-memory" },
+    { "path": "./packages/store-sqlite" },
+    { "path": "./packages/skill-spine" },
+    { "path": "./packages/conformance" },
+    { "path": "./apps/server" }
+  ]
+}
