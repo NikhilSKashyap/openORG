@@ -12,6 +12,6 @@ afterAll(async () =>
 );
 describe.each(providers)("$manifest.id conformance", (provider) => {
   it("preserves every required semantic", async () => {
-    expect((await runConformance(provider)).checks).toHaveLength(12);
+    expect((await runConformance(provider)).checks).toHaveLength(23);
   });
 });

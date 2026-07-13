@@ -11,6 +11,7 @@
     "test": "vitest run --config ../../vitest.config.ts"
   },
   "dependencies": {
+    "@openorg/learning": "workspace:*",
     "@openorg/protocol": "workspace:*",
     "@openorg/sdk": "workspace:*",
     "@openorg/skill-spine": "workspace:*",

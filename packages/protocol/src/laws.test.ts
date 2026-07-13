@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
-import type { LineageAssertion, VerificationReceipt } from "./index.js";
+import type {
+  AccessPolicyManifest,
+  AuthenticatedPrincipal,
+  ConsentGrant,
+  LineageAssertion,
+  VerificationReceipt
+} from "./index.js";
 import {
+  checkAccessPolicy,
+  checkConsent,
   checkCorrectionPreference,
   checkHumanGates,
   checkLineageConfirmation,
@@ -16,6 +24,46 @@ import {
 const timestamp = "2026-07-12T10:00:00Z";
 const contentRef = { algorithm: "sha256" as const, digest: "abc123" };
 const actor = { kind: "agent" as const, id: "agent-1", version: "1" };
+const principal: AuthenticatedPrincipal = {
+  identity: { kind: "human", id: "alice" },
+  organizationId: "acme",
+  permissions: ["records:read", "exports:sft"]
+};
+const accessPolicy: AccessPolicyManifest = {
+  contract: "openorg.access-policy",
+  contractVersion: "1.0.0",
+  id: "acme-policy",
+  version: "1",
+  organizationId: "acme",
+  defaultEffect: "deny",
+  createdAt: timestamp,
+  rules: [
+    {
+      id: "read-internal",
+      effect: "allow",
+      actions: ["record.read"],
+      principalIds: [],
+      requiredPermissions: ["records:read"],
+      recordTypes: [],
+      classifications: ["public", "internal"],
+      purposes: [],
+      destinationKinds: [],
+      requireConsent: false
+    },
+    {
+      id: "sft-external",
+      effect: "allow",
+      actions: ["export.sft"],
+      principalIds: ["alice"],
+      requiredPermissions: ["exports:sft"],
+      recordTypes: [],
+      classifications: [],
+      purposes: ["model-adaptation"],
+      destinationKinds: ["external"],
+      requireConsent: true
+    }
+  ]
+};
 
 const receipt = (): VerificationReceipt => ({
   contract: "openorg.verification-receipt",
@@ -166,5 +214,93 @@ describe("integrity laws", () => {
   it("renders absent values honestly as unknown", () => {
     expect(renderKnown(undefined)).toBe("unknown");
     expect(renderKnown(0)).toBe(0);
+  });
+
+  it("fails closed across organizations, permissions, and classifications", () => {
+    expect(
+      checkAccessPolicy(accessPolicy, principal, {
+        action: "record.read",
+        organizationId: "acme",
+        classification: "internal",
+        requiredPermissions: ["records:read"]
+      }).valid
+    ).toBe(true);
+    expect(
+      checkAccessPolicy(accessPolicy, principal, {
+        action: "record.read",
+        organizationId: "other",
+        classification: "internal"
+      }).valid
+    ).toBe(false);
+    expect(
+      checkAccessPolicy(accessPolicy, principal, {
+        action: "record.read",
+        organizationId: "acme",
+        classification: "restricted"
+      }).valid
+    ).toBe(false);
+  });
+
+  it("requires active, purpose-bound consent for external learning egress", () => {
+    const grant: ConsentGrant = {
+      contract: "openorg.consent-grant",
+      contractVersion: "1.0.0",
+      id: "consent-1",
+      version: "1",
+      organizationId: "acme",
+      grantedBy: { kind: "human", id: "data-owner" },
+      granteeIds: ["alice"],
+      actions: ["export.sft"],
+      purposes: ["model-adaptation"],
+      destinationIds: ["trainer-a"],
+      recordTypes: [],
+      recordRefs: [{ id: "work-1", version: "1" }],
+      evidenceRefs: [contentRef],
+      grantedAt: timestamp,
+      expiresAt: "2026-07-13T10:00:00Z"
+    };
+    const request = {
+      action: "export.sft" as const,
+      organizationId: "acme",
+      purpose: "model-adaptation",
+      destination: { kind: "external" as const, id: "trainer-a" },
+      recordRefs: [{ id: "work-1", version: "1" }]
+    };
+    expect(checkAccessPolicy(accessPolicy, principal, request).valid).toBe(
+      true
+    );
+    expect(
+      checkConsent(grant, principal, request, "2026-07-12T11:00:00Z").valid
+    ).toBe(true);
+    expect(
+      checkConsent(
+        grant,
+        principal,
+        { ...request, purpose: "unapproved-purpose" },
+        "2026-07-12T11:00:00Z"
+      ).valid
+    ).toBe(false);
+    expect(
+      checkConsent(
+        grant,
+        principal,
+        {
+          ...request,
+          recordRefs: [{ id: "different-work", version: "1" }]
+        },
+        "2026-07-12T11:00:00Z"
+      ).valid
+    ).toBe(false);
+    expect(
+      checkConsent(grant, principal, request, "2026-07-14T10:00:00Z").valid
+    ).toBe(false);
+    expect(
+      checkConsent(
+        { ...grant, expiresAt: "2026-07-12T03:00:00-07:00" },
+        principal,
+        request,
+        "2026-07-12T09:30:00Z"
+      ).valid
+    ).toBe(true);
   });
 });

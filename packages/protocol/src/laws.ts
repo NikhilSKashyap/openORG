@@ -1,4 +1,19 @@
 import type { LineageAssertion } from "./lineage-assertion.js";
+import type {
+  AccessPolicyManifest,
+  AuthenticatedPrincipal,
+  ConsentGrant,
+  DataAction,
+  Destination
+} from "./governance.js";
+import type { ReusablePolicy } from "./learning.js";
+import type {
+  EligibilityReceipt,
+  EvaluationReceipt,
+  LearningArtifact,
+  LearningProposal,
+  PromotionReceipt
+} from "./olp.js";
 import type { VerificationReceipt } from "./verification-receipt.js";
 import type { WorkRecord } from "./work-record.js";
 
@@ -167,4 +182,245 @@ export function checkCorrectionPreference(
 export function renderKnown<T>(value: T | undefined): T | "unknown" {
   if (value === undefined) return "unknown";
   return value;
+}
+
+export type AccessRequest = {
+  action: DataAction;
+  organizationId: string;
+  recordType?: string;
+  classification?: "public" | "internal" | "confidential" | "restricted";
+  requiredPermissions?: readonly string[];
+  purpose?: string;
+  destination?: Destination;
+  recordRefs?: readonly { id: string; version: string }[];
+};
+
+const includesOrAny = (values: readonly string[], value?: string) =>
+  values.length === 0 || (value !== undefined && values.includes(value));
+const hasPermission = (principal: AuthenticatedPrincipal, permission: string) =>
+  principal.permissions.includes("*") ||
+  principal.permissions.includes(permission);
+
+export function checkAccessPolicy(
+  policy: AccessPolicyManifest,
+  principal: AuthenticatedPrincipal,
+  request: AccessRequest
+): LawResult {
+  if (
+    principal.organizationId !== "*" &&
+    principal.organizationId !== request.organizationId
+  )
+    return invalid("principal cannot cross organization boundary");
+  if (
+    policy.organizationId !== "*" &&
+    policy.organizationId !== request.organizationId
+  )
+    return invalid("policy does not govern the requested organization");
+  const matching = policy.rules.filter(
+    (rule) =>
+      rule.actions.includes(request.action) &&
+      includesOrAny(rule.principalIds, principal.identity.id) &&
+      includesOrAny(rule.recordTypes, request.recordType) &&
+      includesOrAny(rule.classifications, request.classification) &&
+      includesOrAny(rule.purposes, request.purpose) &&
+      includesOrAny(rule.destinationKinds, request.destination?.kind)
+  );
+  if (matching.some((rule) => rule.effect === "deny"))
+    return invalid("an explicit policy rule denied the request");
+  const allowed = matching.filter((rule) => rule.effect === "allow");
+  if (allowed.length === 0 && policy.defaultEffect === "deny")
+    return invalid("no policy rule allowed the request");
+  const required = new Set([
+    ...(request.requiredPermissions ?? []),
+    ...allowed.flatMap((rule) => rule.requiredPermissions)
+  ]);
+  const missing = [...required].filter(
+    (permission) => !hasPermission(principal, permission)
+  );
+  return missing.length === 0
+    ? valid
+    : invalid(...missing.map((value) => `missing permission: ${value}`));
+}
+
+export function policyRequiresConsent(
+  policy: AccessPolicyManifest,
+  principal: AuthenticatedPrincipal,
+  request: AccessRequest
+): boolean {
+  return policy.rules.some(
+    (rule) =>
+      rule.effect === "allow" &&
+      rule.requireConsent &&
+      rule.actions.includes(request.action) &&
+      includesOrAny(rule.principalIds, principal.identity.id) &&
+      includesOrAny(rule.recordTypes, request.recordType) &&
+      includesOrAny(rule.classifications, request.classification) &&
+      includesOrAny(rule.purposes, request.purpose) &&
+      includesOrAny(rule.destinationKinds, request.destination?.kind)
+  );
+}
+
+export function checkConsent(
+  grant: ConsentGrant,
+  principal: AuthenticatedPrincipal,
+  request: AccessRequest,
+  at: string
+): LawResult {
+  const reasons: string[] = [];
+  if (grant.organizationId !== request.organizationId)
+    reasons.push("consent belongs to a different organization");
+  if (
+    !grant.granteeIds.includes("*") &&
+    !grant.granteeIds.includes(principal.identity.id)
+  )
+    reasons.push("principal is not a consent grantee");
+  if (!grant.actions.includes(request.action))
+    reasons.push("consent does not cover this action");
+  if (!request.purpose || !grant.purposes.includes(request.purpose))
+    reasons.push("consent does not cover this purpose");
+  if (
+    !request.destination ||
+    (!grant.destinationIds.includes("*") &&
+      !grant.destinationIds.includes(request.destination.id))
+  )
+    reasons.push("consent does not cover this destination");
+  if (
+    request.recordType &&
+    grant.recordTypes.length > 0 &&
+    !grant.recordTypes.includes(request.recordType)
+  )
+    reasons.push("consent does not cover this record type");
+  if (request.recordRefs) {
+    const granted = new Set(
+      grant.recordRefs.map((value) => `${value.id}@${value.version}`)
+    );
+    const uncovered = request.recordRefs.filter(
+      (value) => !granted.has(`${value.id}@${value.version}`)
+    );
+    if (uncovered.length > 0)
+      reasons.push(
+        `consent does not cover records: ${uncovered
+          .map((value) => `${value.id}@${value.version}`)
+          .join(", ")}`
+      );
+  }
+  const evaluatedAt = Date.parse(at);
+  if (grant.revokedAt && Date.parse(grant.revokedAt) <= evaluatedAt)
+    reasons.push("consent revoked");
+  if (grant.expiresAt && Date.parse(grant.expiresAt) <= evaluatedAt)
+    reasons.push("consent expired");
+  return reasons.length === 0 ? valid : invalid(...reasons);
+}
+
+export function checkReusablePolicyApproval(policy: ReusablePolicy): LawResult {
+  if (policy.status !== "approved") return valid;
+  return policy.approvedBy?.kind === "human" && policy.approvedAt
+    ? valid
+    : invalid("reusable policy activation requires an authorized human");
+}
+
+const bindingKey = (value: LearningProposal["sourceBindings"][number]) =>
+  `${value.recordRef.id}@${value.recordRef.version}:${value.contentRef.algorithm}:${value.contentRef.digest}`;
+
+export function checkLearningEligibility(
+  proposal: LearningProposal,
+  receipt: EligibilityReceipt
+): LawResult {
+  const reasons: string[] = [];
+  if (proposal.status !== "proposed")
+    reasons.push("withdrawn proposals cannot become eligible");
+  if (
+    proposal.organizationId !== receipt.organizationId ||
+    proposal.id !== receipt.proposalRef.id ||
+    proposal.version !== receipt.proposalRef.version
+  )
+    reasons.push("eligibility receipt does not bind the proposed version");
+  const proposedBindings = proposal.sourceBindings.map(bindingKey).sort();
+  const receivedBindings = receipt.sourceBindings.map(bindingKey).sort();
+  if (JSON.stringify(proposedBindings) !== JSON.stringify(receivedBindings))
+    reasons.push("eligibility source versions or digests differ from proposal");
+
+  const checks = new Map(receipt.checks.map((value) => [value.check, value]));
+  const required = new Set<EligibilityReceipt["checks"][number]["check"]>([
+    "provenance",
+    "access",
+    "consent"
+  ]);
+  if (
+    ["evaluation", "preference", "policy", "training"].includes(
+      proposal.purpose
+    )
+  )
+    required.add("verification");
+  if (["policy", "training"].includes(proposal.purpose))
+    required.add("outcome");
+  for (const name of required) {
+    const check = checks.get(name);
+    if (!check) reasons.push(`missing eligibility check: ${name}`);
+    else if (check.status === "failed")
+      reasons.push(`failed eligibility check: ${name}`);
+  }
+  if (receipt.decision === "eligible" && reasons.length > 0)
+    return invalid(...reasons);
+  if (receipt.decision === "blocked" && reasons.length === 0)
+    return invalid("blocked eligibility receipt has no blocking reason");
+  return valid;
+}
+
+export function checkEvaluationIndependence(
+  artifact: LearningArtifact,
+  receipt: EvaluationReceipt
+): LawResult {
+  const sameActor =
+    artifact.createdBy.kind === receipt.evaluatedBy.kind &&
+    artifact.createdBy.id === receipt.evaluatedBy.id;
+  return receipt.independent === !sameActor
+    ? valid
+    : invalid("evaluation independence must be derived from actor identities");
+}
+
+export function checkPromotionEvaluations(
+  receipt: PromotionReceipt,
+  evaluations: EvaluationReceipt[]
+): LawResult {
+  if (receipt.decision !== "approved") return valid;
+  const reasons: string[] = [];
+  if (evaluations.length === 0)
+    reasons.push("promotion approval requires evaluation evidence");
+  if (evaluations.some((evaluation) => evaluation.verdict !== "passed"))
+    reasons.push("promotion approval requires passed evaluations");
+  if (evaluations.some((evaluation) => !evaluation.independent))
+    reasons.push("promotion approval requires independent evaluations");
+  return reasons.length === 0 ? valid : invalid(...reasons);
+}
+
+export function checkLearningPromotion(
+  receipt: PromotionReceipt,
+  eligibility: EligibilityReceipt,
+  artifact: LearningArtifact
+): LawResult {
+  const reasons: string[] = [];
+  if (
+    receipt.organizationId !== eligibility.organizationId ||
+    receipt.eligibilityRef.id !== eligibility.id ||
+    receipt.eligibilityRef.version !== eligibility.version
+  )
+    reasons.push("promotion does not bind the eligibility receipt version");
+  if (eligibility.decision !== "eligible")
+    reasons.push("blocked evidence cannot be promoted");
+  if (
+    artifact.organizationId !== receipt.organizationId ||
+    artifact.id !== receipt.artifactRef.id ||
+    artifact.version !== receipt.artifactRef.version ||
+    artifact.proposalRef.id !== receipt.proposalRef.id ||
+    artifact.proposalRef.version !== receipt.proposalRef.version ||
+    artifact.eligibilityRef.id !== receipt.eligibilityRef.id ||
+    artifact.eligibilityRef.version !== receipt.eligibilityRef.version
+  )
+    reasons.push("promotion does not bind the governed learning artifact");
+  if (artifact.status !== "active")
+    reasons.push("revoked artifacts cannot be promoted");
+  if (receipt.decision === "approved" && receipt.evaluationRefs.length === 0)
+    reasons.push("promotion approval requires evaluation evidence");
+  return reasons.length === 0 ? valid : invalid(...reasons);
 }

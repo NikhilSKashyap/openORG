@@ -1,7 +1,12 @@
 # openorg Constitution
 
+<!--
+Document role: the single canonical list of enforced protocol laws.
+Each law must map to contracts, runtime enforcement, or conformance evidence.
+-->
+
 openorg is the portable record and trust protocol shared by openGTM, openPM,
-openFDE, and compatible enterprise tools. It preserves how source signals
+openSWE, and compatible enterprise tools. It preserves how source signals
 become decisions, work, evidence, and measured outcomes without owning the
 organization's storage, models, editors, or business systems.
 
@@ -33,6 +38,22 @@ organization's storage, models, editors, or business systems.
     real capability check and evidence from that check.
 12. **Human judgment survives automation.** Overrides, rejected alternatives,
     approvals, and reasons are first-class records.
+13. **Identity precedes access.** In enforced mode every API action is bound to
+    an authenticated principal, organization, permissions, purpose, and
+    destination. Deny rules take precedence.
+14. **Egress is a transaction.** External exports require explicit human
+    consent scoped to every exported record version and leave a dataset
+    manifest plus an immutable egress receipt.
+15. **Evaluation defines choice.** Models are interchangeable only after they
+    run the same private evaluation suite. Unknown quality, latency, or cost is
+    never rewritten as zero or assumed acceptable.
+16. **Training is bound to evidence.** A training job names its governed
+    dataset and proves the exact input digest, execution boundary, adapter, and
+    resulting artifact.
+17. **Learning proposals do not self-promote.** Failures may become evaluation
+    cases and corrections may become policy proposals. OLP requires exact
+    eligibility, passed independent evaluation, and an authenticated human
+    promotion before governed learning becomes active.
 
 ## Verification Integrity
 

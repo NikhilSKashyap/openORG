@@ -1,8 +1,18 @@
 import { describe, expect, it } from "vitest";
 import {
+  AccessPolicyManifestSchema,
   CapabilityManifestSchema,
+  ConsentGrantSchema,
   ContextEnvelopeSchema,
+  EgressReceiptSchema,
+  EvaluationSuiteSchema,
   LineageAssertionSchema,
+  ModelArtifactSchema,
+  ModelEvaluationSchema,
+  ReusablePolicySchema,
+  RoutingDecisionSchema,
+  RoutingPolicySchema,
+  TrainingJobSchema,
   TrainingRecordSchema,
   exportPreferenceJsonl,
   exportRagJsonl,
@@ -17,6 +27,53 @@ const contentRef = { algorithm: "sha256" as const, digest: "abc123" };
 const actor = { kind: "agent" as const, id: "agent-1", version: "1" };
 
 const cases = [
+  [
+    "AccessPolicyManifest",
+    AccessPolicyManifestSchema,
+    {
+      contract: "openorg.access-policy",
+      contractVersion: "1.0.0",
+      id: "policy-1",
+      version: "1",
+      organizationId: "acme",
+      defaultEffect: "deny",
+      createdAt: timestamp,
+      rules: [
+        {
+          id: "read",
+          effect: "allow",
+          actions: ["record.read"],
+          principalIds: ["person-1"],
+          requiredPermissions: [],
+          recordTypes: [],
+          classifications: [],
+          purposes: [],
+          destinationKinds: [],
+          requireConsent: false
+        }
+      ]
+    }
+  ],
+  [
+    "ConsentGrant",
+    ConsentGrantSchema,
+    {
+      contract: "openorg.consent-grant",
+      contractVersion: "1.0.0",
+      id: "consent-1",
+      version: "1",
+      organizationId: "acme",
+      grantedBy: { kind: "human", id: "person-1" },
+      granteeIds: ["person-1"],
+      actions: ["export.evaluation"],
+      purposes: ["model-improvement"],
+      destinationIds: ["customer-vpc"],
+      recordTypes: [],
+      recordRefs: [ref],
+      evidenceRefs: [contentRef],
+      grantedAt: timestamp
+    }
+  ],
   [
     "CapabilityManifest",
     CapabilityManifestSchema,
@@ -154,6 +211,172 @@ const cases = [
       outcome: { description: "Reduced latency", metrics: { latency_ms: 12 } },
       exportedAt: timestamp
     }
+  ],
+  [
+    "EvaluationSuite",
+    EvaluationSuiteSchema,
+    {
+      contract: "olp.evaluation-suite",
+      contractVersion: "0.1.0",
+      id: "suite-1",
+      version: "1",
+      organizationId: "acme",
+      workspaceId: "swe",
+      title: "Private evals",
+      createdAt: timestamp,
+      createdBy: { kind: "human", id: "person-1" },
+      cases: [
+        {
+          id: "case-1",
+          kind: "model_output",
+          input: "input",
+          expectedOutput: "output",
+          sourceRefs: [ref],
+          permissions: []
+        }
+      ]
+    }
+  ],
+  [
+    "ModelEvaluation",
+    ModelEvaluationSchema,
+    {
+      contract: "olp.model-evaluation",
+      contractVersion: "0.1.0",
+      id: "evaluation-1",
+      organizationId: "acme",
+      suiteRef: { id: "suite-1", version: "1" },
+      providerId: "model-provider",
+      modelId: "model-1",
+      startedAt: timestamp,
+      completedAt: timestamp,
+      results: [
+        {
+          caseId: "case-1",
+          status: "passed",
+          output: "output",
+          latencyMs: 10,
+          cost: { amount: 0.01, currency: "USD" },
+          evidenceRefs: []
+        }
+      ],
+      metrics: {
+        totalCases: 1,
+        passedCases: 1,
+        passRate: 1,
+        averageLatencyMs: 10,
+        totalCost: { amount: 0.01, currency: "USD" },
+        costCoverage: 1
+      }
+    }
+  ],
+  [
+    "RoutingPolicy",
+    RoutingPolicySchema,
+    {
+      contract: "olp.routing-policy",
+      contractVersion: "0.1.0",
+      id: "routing-1",
+      version: "1",
+      organizationId: "acme",
+      candidateProviderIds: ["model-provider"],
+      objective: "highest_quality",
+      minimumPassRate: 0.9,
+      createdAt: timestamp
+    }
+  ],
+  [
+    "RoutingDecision",
+    RoutingDecisionSchema,
+    {
+      contract: "olp.routing-decision",
+      contractVersion: "0.1.0",
+      id: "routing-decision-1",
+      organizationId: "acme",
+      policyRef: { id: "routing-1", version: "1" },
+      evaluationRefs: [{ id: "evaluation-1", version: "1" }],
+      status: "selected",
+      selectedProviderId: "model-provider",
+      reasons: ["met measured quality floor"],
+      decidedAt: timestamp
+    }
+  ],
+  [
+    "ModelArtifact",
+    ModelArtifactSchema,
+    {
+      contract: "olp.model-artifact",
+      contractVersion: "0.1.0",
+      id: "model-artifact-1",
+      organizationId: "acme",
+      modelType: "adapter_weights",
+      providerId: "customer-trainer",
+      baseModelId: "base-model",
+      contentRef,
+      createdAt: timestamp
+    }
+  ],
+  [
+    "TrainingJob",
+    TrainingJobSchema,
+    {
+      contract: "olp.training-job",
+      contractVersion: "0.1.0",
+      id: "training-job-1",
+      organizationId: "acme",
+      adapterId: "customer-trainer",
+      method: "external_adapter",
+      executionBoundary: "organization_vpc",
+      datasetRef: { id: "dataset-1", version: "1" },
+      status: "completed",
+      modelRef: { id: "model-artifact-1", version: "1" },
+      inputDigest: contentRef,
+      metrics: { validationAccuracy: 0.9 },
+      startedAt: timestamp,
+      completedAt: timestamp
+    }
+  ],
+  [
+    "ReusablePolicy",
+    ReusablePolicySchema,
+    {
+      contract: "olp.reusable-policy",
+      contractVersion: "0.1.0",
+      id: "reusable-policy-1",
+      version: "1",
+      organizationId: "acme",
+      status: "proposed",
+      scope: ["swe"],
+      instruction: "Check tenant ownership before routing",
+      sourceRefs: [ref],
+      evidenceRefs: [contentRef],
+      createdBy: actor,
+      createdAt: timestamp
+    }
+  ],
+  [
+    "EgressReceipt",
+    EgressReceiptSchema,
+    {
+      contract: "openorg.egress-receipt",
+      contractVersion: "1.0.0",
+      id: "egress-1",
+      organizationId: "acme",
+      actor: { kind: "human", id: "person-1" },
+      action: "export.evaluation",
+      purpose: "model-improvement",
+      destination: {
+        kind: "external",
+        id: "customer-vpc",
+        uri: "https://customer.example/upload"
+      },
+      datasetRef: { id: "dataset-1", version: "1" },
+      consentRef: { id: "consent-1", version: "1" },
+      policyRef: { id: "policy-1", version: "1" },
+      recordRefs: [ref],
+      contentRef,
+      createdAt: timestamp
+    }
   ]
 ] as const;
 
@@ -176,7 +399,7 @@ describe("contract schema round trips", () => {
   });
 
   it("exports normalized training records to all JSONL shapes", () => {
-    const training = TrainingRecordSchema.parse(cases[5][2]);
+    const training = TrainingRecordSchema.parse(cases[7][2]);
     expect(JSON.parse(exportSftJsonl([training]))).toHaveProperty("messages");
     expect(JSON.parse(exportPreferenceJsonl([training]))).toEqual({
       prompt: JSON.stringify(training.context),

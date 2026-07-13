@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": false,
+    "tsBuildInfoFile": "dist/.tsbuildinfo"
+  },
+  "exclude": ["src/**/*.test.ts"]
+}

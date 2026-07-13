@@ -1,4 +1,9 @@
-# openorg Record Protocol 0.2
+# Organizational Record Protocol (ORP) 0.2
+
+<!--
+Document role: the normative ORP envelope, semantic record types, and lineage.
+Canonical integrity and governance laws live in CONSTITUTION.md.
+-->
 
 The protocol separates a portable envelope from role-specific meaning. A GTM
 signal, PM decision, and FDE implementation are not generic work records. They
@@ -41,14 +46,22 @@ policy required to retrieve it.
 | `outcome`      | Measured technical, customer, product, or commercial result.                      |
 | `correction`   | Override, rejected recommendation, changed decision, or preferred result.         |
 
-## Runtime Contracts
+## ORP runtime contracts
 
 - `CapabilityManifest` describes a provider and the operations it can perform.
 - `ContextEnvelope` records exactly what governed context was supplied to a
   human or agent.
 - `LineageAssertion` connects records without depending on a graph backend.
-- `DatasetManifest` describes a reproducible RAG, evaluation, preference, or
-  training export.
+- `AccessPolicyManifest` binds actions to principals, organizations,
+  classifications, purposes, destinations, and required permissions.
+- `ConsentGrant` records a human's scoped, expiring, revocable consent.
+- `EgressReceipt` proves what crossed the organization boundary, why, where,
+  under which policy and consent, and with which content digest.
+
+Learning proposals, dataset manifests, evaluation suites, routing decisions,
+training jobs, model artifacts, and promotion receipts belong to OLP. See
+[`LEARNING_PROTOCOL.md`](./LEARNING_PROTOCOL.md). ORP supplies the immutable
+evidence OLP may evaluate; OLP never mutates that evidence.
 
 Lineage relationships are typed (`motivates`, `authorizes`, `constrains`,
 `implements`, `produces`, `verifies`, `measures`, `corrects`, and others).
@@ -61,8 +74,11 @@ interpretive claims. Services may confirm only observed mechanical facts.
 2. A chosen append-oriented record backend stores portable envelopes.
 3. Search, vector, graph, memory, and tracing indexes are replaceable derived
    views.
-4. openGTM, openPM, and openFDE render and create role-specific records.
+4. openGTM, openPM, and openSWE render and create role-specific records.
 5. Dataset exports are policy-filtered snapshots, never the primary store.
+6. OLP evaluation, routing, training, and promotion records are append-only
+   consumers of ORP evidence. They do not mutate the source evidence that
+   produced them.
 
 ## Minimum Cross-Role Proof
 

@@ -17,6 +17,10 @@ export default defineConfig({
       ).pathname,
       "@openorg/sdk": new URL("./packages/sdk/src/index.ts", import.meta.url)
         .pathname,
+      "@openorg/learning": new URL(
+        "./packages/learning/src/index.ts",
+        import.meta.url
+      ).pathname,
       "@openorg/skill-spine": new URL(
         "./packages/skill-spine/src/index.ts",
         import.meta.url

@@ -8,8 +8,8 @@ import {
 
 export const DatasetManifestSchema = z
   .object({
-    contract: z.literal("openorg.dataset-manifest"),
-    contractVersion: z.literal("0.2.0"),
+    contract: z.literal("olp.dataset-manifest"),
+    contractVersion: z.literal("0.1.0"),
     id: IdentifierSchema,
     organizationId: IdentifierSchema,
     purpose: z.enum(["rag", "evaluation", "preference", "sft"]),

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
+import type { OpenorgRecord } from "@openorg/sdk";
 import { MemoryStore } from "@openorg/store-memory";
 import { createServer } from "./app.js";
 
@@ -66,7 +67,7 @@ describe("runtime", () => {
       url: "/api/health"
     });
     expect(response.statusCode).toBe(200);
-    expect(response.json()).toEqual({ status: "ok" });
+    expect(response.json()).toEqual({ status: "ok", securityMode: "local" });
   });
   it("accepts and returns a protocol record", async () => {
     const app = makeApp();
@@ -81,6 +82,84 @@ describe("runtime", () => {
       url: "/api/records/work-1"
     });
     expect(fetched.json()).toEqual(record);
+  });
+  it("reads legacy learning contracts but writes the canonical OLP identity", async () => {
+    const store = new MemoryStore();
+    const app = createServer(store);
+    apps.add(app);
+    const legacySuite = {
+      contract: "openorg.evaluation-suite",
+      contractVersion: "1.0.0",
+      id: "legacy-suite",
+      version: "4",
+      organizationId: "acme",
+      workspaceId: "swe",
+      title: "Legacy private eval",
+      createdAt: timestamp,
+      createdBy: { kind: "human", id: "owner" },
+      cases: [
+        {
+          id: "case-legacy",
+          kind: "model_output",
+          input: "route this ticket",
+          expectedOutput: "support",
+          sourceRefs: [{ id: "correction-legacy", version: "2" }],
+          permissions: []
+        }
+      ]
+    };
+    const created = await app.inject({
+      method: "POST",
+      url: "/api/records",
+      payload: legacySuite
+    });
+    expect(created.statusCode).toBe(201);
+    expect(created.json()).toMatchObject({
+      contract: "olp.evaluation-suite",
+      contractVersion: "0.1.0",
+      id: legacySuite.id,
+      version: legacySuite.version
+    });
+    const fetched = await app.inject({
+      method: "GET",
+      url: `/api/records/${legacySuite.id}`
+    });
+    expect(fetched.json()).toMatchObject({
+      contract: "olp.evaluation-suite",
+      contractVersion: "0.1.0",
+      id: legacySuite.id,
+      version: legacySuite.version
+    });
+    const storedLegacySuite = {
+      ...legacySuite,
+      id: "legacy-suite-already-stored",
+      version: "2"
+    };
+    await store.append(storedLegacySuite as OpenorgRecord);
+    const legacyFetched = await app.inject({
+      method: "GET",
+      url: `/api/records/${storedLegacySuite.id}`
+    });
+    expect(legacyFetched.json()).toMatchObject({
+      contract: "olp.evaluation-suite",
+      contractVersion: "0.1.0",
+      id: storedLegacySuite.id,
+      version: storedLegacySuite.version
+    });
+    const canonicalQuery = await app.inject({
+      method: "GET",
+      url: "/api/records?kind=olp.evaluation-suite"
+    });
+    expect(
+      canonicalQuery
+        .json<{ id: string; contract: string }[]>()
+        .map(({ id, contract }) => ({ id, contract }))
+    ).toEqual(
+      expect.arrayContaining([
+        { id: legacySuite.id, contract: "olp.evaluation-suite" },
+        { id: storedLegacySuite.id, contract: "olp.evaluation-suite" }
+      ])
+    );
   });
   it("preserves semantic role content and exports resolved RAG text", async () => {
     const app = makeApp();

@@ -27,7 +27,9 @@
         "agent",
         "harness",
         "store",
-        "evaluator"
+        "evaluator",
+        "model",
+        "trainer"
       ]
     },
     "capabilities": {

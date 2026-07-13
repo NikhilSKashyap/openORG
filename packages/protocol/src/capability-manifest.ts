@@ -29,7 +29,9 @@ export const CapabilityManifestSchema = z
       "agent",
       "harness",
       "store",
-      "evaluator"
+      "evaluator",
+      "model",
+      "trainer"
     ]),
     capabilities: z.array(CapabilitySchema),
     status: z.enum([

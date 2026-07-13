@@ -1,6 +1,16 @@
 import type {
   CapabilityManifest,
+  ContentRef,
+  DatasetManifest,
+  EvaluationSuite,
+  ExportRequest,
   LineageAssertion,
+  ModelArtifact,
+  ModelEvaluation,
+  PromotionReceipt,
+  RecordRef,
+  RoutingDecision,
+  TrainingJob,
   WorkRecord
 } from "@openorg/protocol";
 
@@ -60,27 +70,88 @@ export type SkillProvider = {
   invoke(input: unknown): Promise<unknown>;
 };
 
+export type ModelInvocation = {
+  caseId: string;
+  prompt: string;
+};
+export type ModelInvocationResult = {
+  output: string;
+  modelId: string;
+  latencyMs?: number;
+  cost?: { amount: number; currency: string };
+  evidenceRefs?: ContentRef[];
+};
+export type ModelProvider = {
+  manifest: CapabilityManifest;
+  modelId: string;
+  invoke(input: ModelInvocation): Promise<ModelInvocationResult>;
+};
+
+export type TrainingAdapterInput = {
+  organizationId: string;
+  datasetRef: RecordRef;
+  parameters: Record<string, unknown>;
+};
+export type TrainingAdapter = {
+  manifest: CapabilityManifest;
+  train(input: TrainingAdapterInput): Promise<{
+    artifact: ModelArtifact;
+    job: TrainingJob;
+  }>;
+};
+
 type RequestOptions = { method?: string; body?: unknown };
+type ClientOptions = { token?: string };
 type EventSourceLike = {
   onmessage: ((event: { data: string }) => void) | null;
   close(): void;
 };
 type EventSourceFactory = new (url: URL) => EventSourceLike;
-export function createOpenorgClient(baseUrl: string) {
+export function createOpenorgClient(
+  baseUrl: string,
+  clientOptions: ClientOptions = {}
+) {
   const request = async <T>(
     path: string,
     options: RequestOptions = {}
   ): Promise<T> => {
     const init: RequestInit = {};
     if (options.method) init.method = options.method;
+    const headers: Record<string, string> = {};
+    if (clientOptions.token)
+      headers.authorization = `Bearer ${clientOptions.token}`;
     if (options.body !== undefined) {
-      init.headers = { "content-type": "application/json" };
+      headers["content-type"] = "application/json";
       init.body = JSON.stringify(options.body);
     }
+    if (Object.keys(headers).length > 0) init.headers = headers;
     const response = await fetch(new URL(path, baseUrl), init);
     if (!response.ok)
       throw new Error(`${response.status}: ${await response.text()}`);
     return response.json() as Promise<T>;
+  };
+  const exportDataset = async (
+    shape: "rag" | "evaluation" | "preference" | "sft",
+    value: ExportRequest
+  ) => {
+    const headers: Record<string, string> = {
+      "content-type": "application/json"
+    };
+    if (clientOptions.token)
+      headers.authorization = `Bearer ${clientOptions.token}`;
+    const response = await fetch(
+      new URL(`/api/export/${encodeURIComponent(shape)}`, baseUrl),
+      { method: "POST", headers, body: JSON.stringify(value) }
+    );
+    if (!response.ok)
+      throw new Error(`${response.status}: ${await response.text()}`);
+    return {
+      body: await response.text(),
+      datasetManifestId:
+        response.headers.get("x-openorg-dataset-manifest-id") ?? "",
+      egressReceiptId:
+        response.headers.get("x-openorg-egress-receipt-id") ?? undefined
+    };
   };
   return {
     records: {
@@ -125,7 +196,54 @@ export function createOpenorgClient(baseUrl: string) {
           { method: "POST" }
         )
     },
+    exports: { create: exportDataset },
+    learning: {
+      evaluate: (suiteId: string, providerIds: string[]) =>
+        request<ModelEvaluation[]>("/api/learning/evaluate", {
+          method: "POST",
+          body: { suiteId, providerIds }
+        }),
+      route: (policyId: string, evaluationIds: string[]) =>
+        request<RoutingDecision>("/api/learning/route", {
+          method: "POST",
+          body: { policyId, evaluationIds }
+        }),
+      trainLocalLogistic: (
+        datasetId: DatasetManifest["id"],
+        examples: { features: number[]; label: 0 | 1 }[]
+      ) =>
+        request<{ artifact: ModelArtifact; job: TrainingJob }>(
+          "/api/learning/train/local-logistic",
+          { method: "POST", body: { datasetId, examples } }
+        ),
+      promote: (organizationId: string, workspaceId: string) =>
+        request<{ suite?: EvaluationSuite; createdRecordIds: string[] }>(
+          "/api/learning/promote",
+          { method: "POST", body: { organizationId, workspaceId } }
+        ),
+      promoteArtifact: (value: {
+        artifactId: string;
+        evaluationReceiptIds: string[];
+        decision: PromotionReceipt["decision"];
+        target: PromotionReceipt["target"];
+        reasons: string[];
+        rollbackOf?: PromotionReceipt["rollbackOf"];
+      }) =>
+        request<PromotionReceipt>("/api/learning/promotions", {
+          method: "POST",
+          body: value
+        }),
+      approvePolicy: (id: string, evaluationReceiptIds: string[]) =>
+        request<OpenorgRecord>(
+          `/api/learning/policies/${encodeURIComponent(id)}/approve`,
+          { method: "POST", body: { evaluationReceiptIds } }
+        )
+    },
     subscribe(listener: (event: unknown) => void): () => void {
+      if (clientOptions.token)
+        throw new Error(
+          "authenticated SSE requires an EventSource implementation with header support"
+        );
       const EventSourceConstructor = (
         globalThis as unknown as { EventSource?: EventSourceFactory }
       ).EventSource;

@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "olp.model-artifact"
+    },
+    "contractVersion": {
+      "type": "string",
+      "const": "0.1.0"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "organizationId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "modelType": {
+      "type": "string",
+      "enum": [
+        "logistic_regression",
+        "fine_tuned_model",
+        "adapter_weights"
+      ]
+    },
+    "providerId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "baseModelId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "featureCount": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    },
+    "weights": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    },
+    "bias": {
+      "type": "number"
+    },
+    "threshold": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "contentRef": {
+      "type": "object",
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "enum": [
+            "sha256",
+            "sha512"
+          ]
+        },
+        "digest": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mediaType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "uri": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "algorithm",
+        "digest"
+      ],
+      "additionalProperties": false
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+    }
+  },
+  "required": [
+    "contract",
+    "contractVersion",
+    "id",
+    "organizationId",
+    "modelType",
+    "contentRef",
+    "createdAt"
+  ],
+  "additionalProperties": false
+}

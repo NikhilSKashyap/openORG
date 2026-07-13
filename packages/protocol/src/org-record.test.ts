@@ -110,8 +110,8 @@ describe("organizational records", () => {
   it("requires reproducible dataset splits", () => {
     expect(() =>
       DatasetManifestSchema.parse({
-        contract: "openorg.dataset-manifest",
-        contractVersion: "0.2.0",
+        contract: "olp.dataset-manifest",
+        contractVersion: "0.1.0",
         id: "dataset-1",
         organizationId: "acme",
         purpose: "sft",

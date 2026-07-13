@@ -3,6 +3,7 @@
   "compilerOptions": { "rootDir": "src", "outDir": "dist" },
   "include": ["src/**/*.ts"],
   "references": [
+    { "path": "../../packages/learning" },
     { "path": "../../packages/protocol" },
     { "path": "../../packages/sdk" },
     { "path": "../../packages/store-memory" },

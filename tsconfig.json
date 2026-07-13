@@ -18,6 +18,7 @@
     { "path": "./packages/protocol" },
     { "path": "./packages/manifest" },
     { "path": "./packages/sdk" },
+    { "path": "./packages/learning" },
     { "path": "./packages/workbench-kit" },
     { "path": "./packages/store-memory" },
     { "path": "./packages/store-sqlite" },

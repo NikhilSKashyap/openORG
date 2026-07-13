@@ -28,6 +28,9 @@ importers:
 
   apps/server:
     dependencies:
+      "@openorg/learning":
+        specifier: workspace:*
+        version: link:../../packages/learning
       "@openorg/protocol":
         specifier: workspace:*
         version: link:../../packages/protocol
@@ -65,6 +68,19 @@ importers:
       "@openorg/store-sqlite":
         specifier: file:../store-sqlite
         version: link:../store-sqlite
+
+  packages/learning:
+    dependencies:
+      "@openorg/protocol":
+        specifier: file:../protocol
+        version: link:../protocol
+      "@openorg/sdk":
+        specifier: file:../sdk
+        version: link:../sdk
+    devDependencies:
+      "@types/node":
+        specifier: 22.20.1
+        version: 22.20.1
 
   packages/manifest:
     dependencies:
