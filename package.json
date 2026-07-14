@@ -11,7 +11,7 @@
     "build": "pnpm -r build",
     "conformance": "pnpm --filter @openorg/conformance test",
     "dev": "pnpm --filter @openorg/server dev",
-    "dev:all": "node scripts/dev-all.mjs",
+    "dev:all": "pnpm --parallel --filter @openorg/server --filter @openorg/open-swe --filter @openorg/open-pm --filter @openorg/open-gtm dev",
     "seed:golden": "node scripts/seed-golden.mjs",
     "lint": "eslint . && prettier --check .",
     "schemas": "pnpm --filter @openorg/protocol schemas",

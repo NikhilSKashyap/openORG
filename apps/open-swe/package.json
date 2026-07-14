@@ -1,0 +1,25 @@
+{
+  "name": "@openorg/open-swe",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --force --port 4710 --strictPort",
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run --config ../../vitest.config.ts",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@openorg/manifest": "workspace:*",
+    "@openorg/sdk": "workspace:*",
+    "@openorg/workbench-kit": "workspace:*",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vite": "^7.0.0",
+    "vitest": "^3.2.4",
+    "typescript": "^5.8.3",
+    "@types/node": "^22.15.0",
+    "@openorg/protocol": "workspace:*"
+  },
+  "devDependencies": {}
+}

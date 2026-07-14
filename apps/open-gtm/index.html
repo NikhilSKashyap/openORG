@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>openGTM</title>
+    <style>
+      html,
+      body,
+      #app {
+        margin: 0;
+        min-height: 100%;
+        width: 100%;
+      }
+      body {
+        background: #fff;
+        color: #172033;
+        font-family: Inter, system-ui, sans-serif;
+      }
+      .role-form {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(150px, 1fr));
+        gap: 12px;
+        padding: 20px 28px;
+        background: #eef7f5;
+        border-bottom: 1px solid #d5e6e1;
+      }
+      .role-form > div {
+        grid-row: span 2;
+      }
+      .role-form h2 {
+        margin: 2px 0;
+      }
+      .role-eyebrow {
+        margin: 0;
+        color: #53736b;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .role-form label {
+        display: grid;
+        gap: 5px;
+        color: #52616f;
+        font-size: 12px;
+      }
+      .role-form input,
+      .role-form textarea,
+      .role-form select,
+      .role-form button {
+        box-sizing: border-box;
+        min-height: 38px;
+        border: 1px solid #cbd7d4;
+        border-radius: 5px;
+        padding: 8px;
+        font: inherit;
+      }
+      .role-form textarea {
+        resize: vertical;
+      }
+      .role-form button {
+        align-self: end;
+        background: #136f63;
+        color: white;
+        cursor: pointer;
+      }
+      .role-form output {
+        grid-column: 2 / -1;
+        color: #136f63;
+      }
+      @media (max-width: 900px) {
+        .role-form {
+          grid-template-columns: 1fr 1fr;
+        }
+        .role-form > div {
+          grid-row: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="create"></div>
+    <div id="app"></div>
+    <script type="module" src="/main.tsx"></script>
+  </body>
+</html>

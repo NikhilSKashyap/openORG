@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>openSWE</title>
+    <style>
+      html,
+      body,
+      #app {
+        margin: 0;
+        min-height: 100%;
+        width: 100%;
+      }
+      body {
+        background: #fff;
+        color: #172033;
+        font-family: Inter, system-ui, sans-serif;
+      }
+      .delivery-tools {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        padding: 20px 28px;
+        background: #eff4f9;
+        border-bottom: 1px solid #d9e2ed;
+      }
+      .delivery-tools form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .delivery-tools h2 {
+        margin: 2px 0 10px;
+      }
+      .role-eyebrow {
+        grid-column: 1 / -1;
+        margin: 0;
+        color: #536c87;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .delivery-tools label {
+        display: grid;
+        gap: 5px;
+        color: #586675;
+        font-size: 12px;
+      }
+      .delivery-tools input,
+      .delivery-tools textarea,
+      .delivery-tools select,
+      .delivery-tools button {
+        box-sizing: border-box;
+        min-height: 38px;
+        border: 1px solid #cbd7e4;
+        border-radius: 5px;
+        padding: 8px;
+        font: inherit;
+      }
+      .delivery-tools button {
+        background: #245f96;
+        color: white;
+        cursor: pointer;
+      }
+      .delivery-tools output,
+      .button-row {
+        grid-column: 1 / -1;
+      }
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      @media (max-width: 900px) {
+        .delivery-tools {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="tools"></div>
+    <div id="app"></div>
+    <script type="module" src="/main.tsx"></script>
+  </body>
+</html>

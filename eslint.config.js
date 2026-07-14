@@ -7,6 +7,7 @@ export default tseslint.config(
       "**/dist/**",
       "**/node_modules/**",
       ".arch/**",
+      "apps/open-*/vite.config.ts",
       "packages/protocol/schemas/**"
     ]
   },

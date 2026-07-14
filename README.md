@@ -38,8 +38,9 @@ Each document has one job:
 
 ## The reference products
 
-The sibling apps prove that the protocol supports real work rather than another
-observability dashboard:
+The workspace apps prove that the protocol supports real work rather than
+another observability dashboard. They ship in this repository so the complete
+path runs from one clone:
 
 | Product | Port | What it does                                                                                                                                       |
 | ------- | ---: | -------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -64,6 +65,9 @@ cp .env.example .env
 pnpm build
 pnpm dev:all
 ```
+
+`dev:all` starts the control plane and all three role workbenches. To run only
+the protocol and control plane, use `pnpm dev`.
 
 Open:
 
@@ -130,11 +134,10 @@ Role-product request bodies use one canonical vocabulary:
 - `successMetrics`: an array of `{ name, target, value }` objects, where `target`
   is the intended result and `value` is the current measured result.
 
-For the short v0.2 migration window, staged role middleware also accepts the
-deprecated singular `decisionRef` and deprecated `metric`/`target` pair. The
-middleware normalizes those aliases immediately; new clients must send only the
-canonical fields. The verifier syncs `.arch/staging/openPM` and
-`.arch/staging/openSWE` to their sibling role repositories.
+For the short v0.2 migration window, role middleware also accepts the deprecated
+singular `decisionRef` and deprecated `metric`/`target` pair. The middleware
+normalizes those aliases immediately; new clients must send only the canonical
+fields.
 
 ## Packages
 

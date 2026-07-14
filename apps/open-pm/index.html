@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>openPM</title>
+    <style>
+      html,
+      body,
+      #app {
+        margin: 0;
+        min-height: 100%;
+        width: 100%;
+      }
+      body {
+        background: #fff;
+        color: #172033;
+        font-family: Inter, system-ui, sans-serif;
+      }
+      .pm-tools {
+        display: grid;
+        grid-template-columns: minmax(220px, 0.8fr) minmax(500px, 2fr) minmax(
+            220px,
+            0.8fr
+          );
+        gap: 16px;
+        padding: 20px 28px;
+        background: #f5f2fb;
+        border-bottom: 1px solid #e1dced;
+      }
+      .pm-tools form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .pm-tools h2 {
+        margin: 2px 0 10px;
+      }
+      .role-eyebrow {
+        margin: 0;
+        color: #675b7d;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .pm-tools label {
+        display: grid;
+        gap: 5px;
+        color: #625e6c;
+        font-size: 12px;
+      }
+      .pm-tools input,
+      .pm-tools textarea,
+      .pm-tools select,
+      .pm-tools button {
+        box-sizing: border-box;
+        min-height: 38px;
+        border: 1px solid #d7cee7;
+        border-radius: 5px;
+        padding: 8px;
+        font: inherit;
+      }
+      .pm-tools button {
+        background: #5b3fa3;
+        color: white;
+        cursor: pointer;
+      }
+      .pm-tools article {
+        padding: 10px 0;
+        border-bottom: 1px solid #ddd4ec;
+      }
+      .pm-tools article p {
+        margin: 4px 0;
+        color: #655f70;
+      }
+      .pm-tools output {
+        grid-column: 1 / -1;
+        color: #4d318f;
+      }
+      @media (max-width: 1000px) {
+        .pm-tools {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="role"></div>
+    <div id="app"></div>
+    <script type="module" src="/main.tsx"></script>
+  </body>
+</html>
